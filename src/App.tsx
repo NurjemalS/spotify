@@ -72,43 +72,37 @@ function App() {
   const [code, setCode] = useState('')
 
     useEffect(()=>{
-
-      if ( window.location.search.length <= 0 ){
+      let hash = window.location.hash;
+      let access_token = '';
+   
+      if ( hash.length <= 0 ){
         let url = 'https://accounts.spotify.com/authorize';
-        url += '?client_id=b5b64c9cc75043e5b971bc79a0b52f2b';
-        url += "&response_type=code";
+        url += '?client_id=1660d73268854fa1b5db09a6c41f44b4';
+        url += "&response_type=token";
         url += '&redirect_uri=http://127.0.0.1:3000';
         url += "&show_dialog=true";
         url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private";
         window.location.href = url;
       }
-    
-      let a = ''
-      const queryString = window.location.search;
+
+      const queryString = hash;
       if ( queryString.length > 0 ){
-          const urlParams = new URLSearchParams(queryString);
-          a = urlParams.get('code') || ''
-          setCode(a)
+        access_token = hash.split('#access_token=')[1].split('&')[0];
+          setCode(access_token)
       }
     
-     
-
-      axios.post('https://accounts.spotify.com/api/token',{
-        data: {
-          grant_type: 'authorization_code',
-          code: code,
-          redirect_uri: 'http://127.0.0.1:3000'
-        },
-       
+      axios.get('https://api.spotify.com/v1/me',{
         'headers': {
-          'Authorization': 'Basic ' +  (new Buffer(new Credentials().getClientId() + ':' + new Credentials().getSecretId()).toString('base64')),
-          'Content-Type':'application/x-www-form-urlencoded'
+          'Authorization': 'Bearer ' +  access_token
        }
 
       }).then(tokenresponse => {
         console.log(tokenresponse.data);
         //setToken(tokenresponse.data.access_token);
-      }).catch(error => console.log(error));
+      }).catch((error) => 
+      {
+        console.log(error)
+      });
 
 
     }, [])
